@@ -1,45 +1,62 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-copy "%RECIPE_DIR%\\CMakeLists.txt" .
+:: The source tarball extracts into a subdirectory of the work directory.
+:: Find it by locating the directory that contains platform\win32\mupdf.sln.
+set SRCDIR=
+for /d %%D in (*) do (
+    if exist "%%D\platform\win32\mupdf.sln" set SRCDIR=%%D
+)
+if "!SRCDIR!"=="" (
+    echo ERROR: Could not find mupdf source directory in %CD%
+    exit 1
+)
+pushd "!SRCDIR!"
+
+:: Build MuPDF using the native Visual Studio solution.
+:: Uses bundled thirdparty libs (freetype, brotli, jbig2dec, openjpeg,
+:: zlib, harfbuzz, lcms2, gumbo-parser, libjpeg, leptonica, tesseract, etc.)
+:: rather than conda-provided ones.
+
+set PLAT=x64
+set CONFIG=Release
+set WINDIR=platform\win32
+set OUTDIR=%WINDIR%\%PLAT%\%CONFIG%
+
+:: Build mutool via MSBuild. Project references pull in the full dependency chain:
+::   mutool -> libmutool -> libmupdf -> libthirdparty  (brotli, freetype, jbig2dec,
+::                                                      libjpeg, openjpeg, zlib,
+::                                                      gumbo-parser, lcms2, mujs)
+::                                   -> libresources   (embedded fonts)
+::                                   -> libharfbuzz
+::                                   -> libpkcs7
+::                                   -> libextract
+::                                   -> libmubarcode
+::                                   -> libtesseract -> libleptonica
+::                          -> libmuthreads
+::                          -> sodochandler
+msbuild %WINDIR%\mupdf.sln ^
+    /t:mutool ^
+    /p:Configuration=%CONFIG% ^
+    /p:Platform=%PLAT% ^
+    /p:PlatformToolset=v143 ^
+    /p:PreferredToolArchitecture=x64 ^
+    /m ^
+    /v:m
 if errorlevel 1 exit 1
 
-:: Make a build folder and change to it.
-mkdir build
-cd build
+:: --- Install ---
 
-set VERBOSE=1
-:: Configure using the CMakeFiles
-::cmake -G "NMake Makefiles" ^
-::cmake -G "Visual Studio 14 2015 Win64" ^
-cmake -G Ninja ^
-      -DCMAKE_INSTALL_PREFIX:PATH="%LIBRARY_PREFIX%" ^
-      -DCMAKE_PREFIX_PATH:PATH="%LIBRARY_PREFIX%" ^
-      -DCMAKE_BUILD_TYPE:STRING=Release ^
-      ..
+:: mutool executable (tested by the package test suite)
+copy /y "%OUTDIR%\mutool.exe" "%LIBRARY_BIN%\"
 if errorlevel 1 exit 1
 
-:: Build!
-::nmake
-cmake --build . --config Release
+:: static library (for consumers that link against libmupdf)
+copy /y "%OUTDIR%\libmupdf.lib" "%LIBRARY_LIB%\"
 if errorlevel 1 exit 1
 
-:: Install!
-nmake install
+:: public C headers
+xcopy /s /y "include\" "%LIBRARY_INC%\"
 if errorlevel 1 exit 1
 
-:: build system uses non-standard env vars
-::set XCFLAGS=%CFLAGS% -I"%LIBRARY_PREFIX%\\include"
-::set XLIBS=%LIBS%
-::set USE_SYSTEM_LIBS=yes
-::set USE_SYSTEM_JPEGXR=yes
-
-:: diagnostics
-::dir %LIBRARY_PREFIX%\\include
-
-:: build and install
-::make "prefix=%LIBRARY_PREFIX%" -j %CPU_COUNT% all
-::if errorlevel 1 exit 1
-:: no make check
-::make "prefix=%LIBRARY_PREFIX%" install
-::if errorlevel 1 exit 1
+popd
