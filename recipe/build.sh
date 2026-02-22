@@ -25,11 +25,20 @@ export USE_SYSTEM_LIBS=yes
 export USE_SYSTEM_JPEGXR=yes
 export VENV_FLAG=""
 
+# Point the mupdf Python binding build to the HOST Python (not BUILD_PREFIX Python).
+# Without this, pipcl.PythonFlags uses sys.executable (BUILD_PREFIX Python 3.14)
+# to find python-config, causing an ABI mismatch with the target Python 3.13.
+export PIPCL_PYTHON_CONFIG="${PREFIX}/bin/python3-config"
+
 # diagnostics
 #ls -lh ${PREFIX}/lib
 
 # build and install
-make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes -j ${CPU_COUNT} all python
+# Build 'all' and 'python' targets separately to avoid a race condition:
+# 'python' depends on 'shared-release' which triggers a recursive make that
+# races with the parent make's link step for mutool (undefined murun_main).
+make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes -j ${CPU_COUNT} all
+make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes -j ${CPU_COUNT} python
 
 # no make check
 make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes install install-shared-python

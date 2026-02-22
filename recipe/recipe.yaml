@@ -1,0 +1,114 @@
+context:
+  name: mupdf
+  version: "1.27.2"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://www.mupdf.com/downloads/archive/mupdf-${{ version }}-source.tar.gz
+  sha256: 553867b135303dc4c25ab67c5f234d8e900a0e36e66e8484d99adc05fe1e8737
+  patches:
+    # Make shared libs, rather than static
+    # https://bugs.ghostscript.com/show_bug.cgi?id=702250
+    # don't install fully rendered docs
+    - if: linux
+      then: Makefile-shared-libs-linux.patch
+    - if: osx
+      then:
+        - Makefile-shared-libs-osx.patch
+        # OSX has libfreetype.a, not libfreetype2.a
+        - Makerules.patch
+        - wrap.patch
+
+build:
+  number: 0
+  skip:
+    - win
+  dynamic_linking:
+    missing_dso_allowlist:
+      - if: osx
+        then: /System/Library/Frameworks/GLUT.framework/Versions/A/GLUT
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - ${{ compiler('cxx') }}
+    - if: linux
+      then:
+        - ${{ cdt('mesa-libgl-devel') }}
+        - ${{ cdt('mesa-dri-drivers') }}
+        - ${{ cdt('libselinux') }}
+        - ${{ cdt('libxdamage') }}
+        - ${{ cdt('libxxf86vm') }}
+        - ${{ cdt('libxext') }}
+    - if: win
+      then:
+        - cmake
+        - ninja
+    - make
+    - pkg-config
+    - swig
+    - python-clang
+  host:
+    - brotli
+    - python
+    - if: linux
+      then:
+        - xorg-libxfixes
+        - libglu
+    - libgumbo
+    - if: unix
+      then: mesalib
+    - freetype
+    - jbig2dec
+    - openjpeg
+    - zlib
+    - curl
+    - harfbuzz
+    - if: linux or win
+      then: freeglut
+    - if: linux
+      then:
+        - tesseract
+        - leptonica
+  run:
+    - python
+    - if: linux
+      then:
+        - xorg-libxext
+        - xorg-libx11
+    - curl
+
+tests:
+  - script:
+      - if: unix
+        then: test -f $PREFIX/bin/mutool
+      - if: win
+        then: if not exist %LIBRARY_BIN%\\mutool.exe exit 1
+  - if: linux
+    then:
+      python:
+        imports:
+          - mupdf
+
+about:
+  homepage: https://www.mupdf.com/
+  license: AGPL-3.0-only
+  license_file: COPYING
+  summary: A lightweight PDF, XPS, and E-book viewer
+  description: |
+    The renderer in MuPDF is tailored for high quality anti-aliased graphics.
+    It renders text with metrics and spacing accurate to within fractions of
+    a pixel for the highest fidelity in reproducing the look of a printed page
+    on screen.
+  documentation: https://www.mupdf.com/docs
+  repository: http://git.ghostscript.com/?p=mupdf.git;a=summary
+
+extra:
+  recipe-maintainers:
+    - xmnlab
+    - scopatz
+    - jan-janssen
