@@ -1,27 +1,18 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: The source tarball extracts into a subdirectory of the work directory.
-:: Find it by locating the directory that contains platform\win32\mupdf.sln.
-set SRCDIR=
-for /d %%D in (*) do (
-    if exist "%%D\platform\win32\mupdf.sln" set SRCDIR=%%D
-)
-if "!SRCDIR!"=="" (
-    echo ERROR: Could not find mupdf source directory in %CD%
-    exit 1
-)
-pushd "!SRCDIR!"
+set "SLN_PLAT=%CMAKE_GENERATOR_PLATFORM%"
+set "SLN_TOOLSET=%CMAKE_GENERATOR_TOOLSET%"
+set "SLN_DIR=platform\win32"
+set "SLN_FILE=mupdf.sln"
+set "CONFIG=Release"
 
 :: Build MuPDF using the native Visual Studio solution.
 :: Uses bundled thirdparty libs (freetype, brotli, jbig2dec, openjpeg,
 :: zlib, harfbuzz, lcms2, gumbo-parser, libjpeg, leptonica, tesseract, etc.)
 :: rather than conda-provided ones.
 
-set PLAT=x64
-set CONFIG=Release
-set WINDIR=platform\win32
-set OUTDIR=%WINDIR%\%PLAT%\%CONFIG%
+
 
 :: Build mutool via MSBuild. Project references pull in the full dependency chain:
 ::   mutool -> libmutool -> libmupdf -> libthirdparty  (brotli, freetype, jbig2dec,
@@ -35,28 +26,24 @@ set OUTDIR=%WINDIR%\%PLAT%\%CONFIG%
 ::                                   -> libtesseract -> libleptonica
 ::                          -> libmuthreads
 ::                          -> sodochandler
-msbuild %WINDIR%\mupdf.sln ^
-    /t:mutool ^
+msbuild %SLN_DIR%\%SLN_FILE% ^
     /p:Configuration=%CONFIG% ^
-    /p:Platform=%PLAT% ^
-    /p:PlatformToolset=v143 ^
-    /p:PreferredToolArchitecture=x64 ^
-    /m ^
-    /v:m
+    /p:Platform=%SLN_PLAT% ^
+    /p:PlatformToolset=%SLN_TOOLSET% ^
+    /t:mutool ^
+    /verbosity:normal
 if errorlevel 1 exit 1
 
 :: --- Install ---
-
-:: mutool executable (tested by the package test suite)
-copy /y "%OUTDIR%\mutool.exe" "%LIBRARY_BIN%\"
+cmake -E make_directory %LIBRARY_BIN%
 if errorlevel 1 exit 1
-
-:: static library (for consumers that link against libmupdf)
-copy /y "%OUTDIR%\libmupdf.lib" "%LIBRARY_LIB%\"
+cmake -E copy %SRC_DIR%\%SLN_DIR%\%SLN_PLAT%\%CONFIG%\mutool.exe %LIBRARY_BIN%\
 if errorlevel 1 exit 1
-
-:: public C headers
-xcopy /s /y "include\" "%LIBRARY_INC%\"
+cmake -E make_directory %LIBRARY_LIB%
 if errorlevel 1 exit 1
-
-popd
+cmake -E copy %SRC_DIR%\%SLN_DIR%\%SLN_PLAT%\%CONFIG%\libmupdf.lib %LIBRARY_LIB%\
+if errorlevel 1 exit 1
+cmake -E make_directory %LIBRARY_INC%
+if errorlevel 1 exit 1
+cmake -E copy_directory %SRC_DIR%\include %LIBRARY_INC%
+if errorlevel 1 exit 1
