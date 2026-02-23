@@ -41,8 +41,9 @@ export PIPCL_PYTHON_CONFIG="${PREFIX}/bin/python3-config"
 # Build 'all' and 'python' targets separately to avoid a race condition:
 # 'python' depends on 'shared-release' which triggers a recursive make that
 # races with the parent make's link step for mutool (undefined murun_main).
-make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes -j ${CPU_COUNT} all
-make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes -j ${CPU_COUNT} python
+# USE_ARGUMENT_FILE=no: conda's ar doesn't support @file response files
+make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes USE_ARGUMENT_FILE=no -j ${CPU_COUNT} all
+make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes USE_ARGUMENT_FILE=no -j ${CPU_COUNT} python
 
 # no make check
-make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes install install-shared-python
+make prefix="${PREFIX}" pydir="${SP_DIR}" tesseract=${TESSERACT} shared=yes USE_ARGUMENT_FILE=no install install-shared-python
