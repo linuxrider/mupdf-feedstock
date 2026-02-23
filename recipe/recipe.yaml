@@ -51,6 +51,11 @@ requirements:
   host:
     - brotli
     - python
+    - if: win
+      then:
+        - pip
+        - setuptools
+        - python-clang
     - if: linux
       then:
         - xorg-libxfixes
@@ -88,11 +93,9 @@ tests:
         then:
           - if not exist %LIBRARY_BIN%\\mutool.exe exit 1
           - mutool -v
-  - if: unix
-    then:
-      python:
-        imports:
-          - mupdf
+  - python:
+      imports:
+        - mupdf
 
 about:
   homepage: https://www.mupdf.com/

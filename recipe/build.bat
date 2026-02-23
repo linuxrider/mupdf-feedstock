@@ -7,13 +7,6 @@ set "SLN_DIR=platform\win32"
 set "SLN_FILE=mupdf.sln"
 set "CONFIG=Release"
 
-:: Build MuPDF using the native Visual Studio solution.
-:: Uses bundled thirdparty libs (freetype, brotli, jbig2dec, openjpeg,
-:: zlib, harfbuzz, lcms2, gumbo-parser, libjpeg, leptonica, tesseract, etc.)
-:: rather than conda-provided ones.
-
-
-
 :: Build mutool via MSBuild. Project references pull in the full dependency chain:
 ::   mutool -> libmutool -> libmupdf -> libthirdparty  (brotli, freetype, jbig2dec,
 ::                                                      libjpeg, openjpeg, zlib,
@@ -34,14 +27,21 @@ msbuild %SLN_DIR%\%SLN_FILE% ^
     /verbosity:normal
 if errorlevel 1 exit 1
 
-:: --- Install ---
+:: Build Python bindings via pip install.
+:: setup.py internally runs scripts/mupdfwrap.py with actions 0,1,2,3:
+::   0: Generate C++ source using libclang (needs python-clang)
+::   1: Build mupdfcpp64.dll using devenv
+::   2: Generate Python wrapper using SWIG
+::   3: Build _mupdf.pyd using cl.exe/link.exe
+set MUPDF_SETUP_USE_CLANG_PYTHON=1
+set MUPDF_SETUP_USE_SWIG=1
+pip install . --no-deps --no-build-isolation
+if errorlevel 1 exit 1
+
+:: --- Install mutool and headers ---
 cmake -E make_directory %LIBRARY_BIN%
 if errorlevel 1 exit 1
 cmake -E copy %SRC_DIR%\%SLN_DIR%\%SLN_PLAT%\%CONFIG%\mutool.exe %LIBRARY_BIN%\
-if errorlevel 1 exit 1
-cmake -E make_directory %LIBRARY_LIB%
-if errorlevel 1 exit 1
-cmake -E copy %SRC_DIR%\%SLN_DIR%\%SLN_PLAT%\%CONFIG%\libmupdf.lib %LIBRARY_LIB%\
 if errorlevel 1 exit 1
 cmake -E make_directory %LIBRARY_INC%
 if errorlevel 1 exit 1
