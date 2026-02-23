@@ -10,20 +10,15 @@ source:
   url: https://www.mupdf.com/downloads/archive/mupdf-${{ version }}-source.tar.gz
   sha256: 553867b135303dc4c25ab67c5f234d8e900a0e36e66e8484d99adc05fe1e8737
   patches:
-    # Make shared libs, rather than static
-    # https://bugs.ghostscript.com/show_bug.cgi?id=702250
-    # don't install fully rendered docs
-    - if: linux
-      then: Makefile-shared-libs-linux.patch
     - if: osx
       then:
-        - Makefile-shared-libs-osx.patch
-        # OSX has libfreetype.a, not libfreetype2.a
+        # Fix freetype lib name (-lfreetype not -lfreetype2) and remove
+        # xcrun wrappers that conflict with conda compilers
         - Makerules.patch
+        # Fix .so/.dylib references in the Python binding build script
         - wrap.patch
-    # Python extensions must be .so even on macOS, not .dylib
-    - if: osx
-      then: python-ext-so.patch
+        # Python extensions must be .so even on macOS, not .dylib
+        - python-ext-so.patch
 
 build:
   number: 0
