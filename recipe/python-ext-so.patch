@@ -1,0 +1,9 @@
+--- a/Makefile
++++ b/Makefile
+@@ -684,7 +684,7 @@
+ install-shared-python: install-shared-c++ python
+ 	install -d $(DESTDIR)$(pydir)/mupdf
+-	install -m $(SO_INSTALL_MODE) $(OUT)/_mupdf.$(SO) $(DESTDIR)$(pydir)/mupdf
++	install -m $(SO_INSTALL_MODE) $(OUT)/_mupdf.so $(DESTDIR)$(pydir)/mupdf
+ 	install -m 644 $(OUT)/mupdf.py $(DESTDIR)$(pydir)/mupdf/__init__.py
+ 
