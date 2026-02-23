@@ -11,6 +11,10 @@ if [[ "$target_platform" == osx* ]]; then
   export CFLAGS="${CFLAGS} -Wno-incompatible-function-pointer-types"
   #export SYS_FREETYPE_LIBS=" -lfreetype"
   #export SYS_FREETYPE_CFLAGS="${CFLAGS}"
+  # macOS Makerules doesn't use pkg-config for gumbo (only Linux does),
+  # so without this it compiles bundled gumbo source instead of linking
+  # against the system libgumbo, leaving symbols unresolved at runtime.
+  export SYS_GUMBO_LIBS="-lgumbo"
   export TESSERACT=false
 else
   export TESSERACT=yes

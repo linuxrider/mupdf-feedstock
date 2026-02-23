@@ -91,6 +91,7 @@ index 811ade939..92ec17dc7 100644
 +install-shared-c: install-shared-check shared install-headers
 +	install -d $(DESTDIR)$(libdir)
 +	install -m $(SO_INSTALL_MODE) $(OUT)/libmupdf.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/
++	install -m $(SO_INSTALL_MODE) $(LIBS_TO_INSTALL_IN_LIB) $(DESTDIR)$(libdir)/
  
  install-shared-c++: install-shared-c c++
  	install -m 644 platform/c++/include/mupdf/*.h $(DESTDIR)$(incdir)/mupdf
