@@ -1,9 +1,28 @@
 --- a/Makefile
 +++ b/Makefile
-@@ -684,7 +684,7 @@
+@@ -490,7 +490,7 @@
+ 	install -d $(DESTDIR)$(libdir)
+ ifeq ($(shared),yes)
+ 	install -m $(SO_INSTALL_MODE) $(OUT)/libmupdf.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/libmupdf.$(SO)$(SO_VERSION)
+-  ifneq ($(OS),OpenBSD)
++  ifneq ($(SO_VERSION),)
+ 	ln -sf libmupdf.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/libmupdf.$(SO)$(SO_VERSION_MAJOR)
+ 	ln -sf libmupdf.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/libmupdf.$(SO)
+   endif
+@@ -677,14 +677,14 @@
+ install-shared-c++: install-shared-c c++
+ 	install -m 644 platform/c++/include/mupdf/*.h $(DESTDIR)$(incdir)/mupdf
+ 	install -m $(SO_INSTALL_MODE) $(OUT)/libmupdfcpp.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/
+-ifneq ($(OS),OpenBSD)
++ifneq ($(SO_VERSION),)
+ 	ln -sf libmupdfcpp.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/libmupdfcpp.$(SO)
+ 	ln -sf libmupdfcpp.$(SO)$(SO_VERSION) $(DESTDIR)$(libdir)/libmupdfcpp.$(SO)$(SO_VERSION_MAJOR)
+ endif
+ 
  install-shared-python: install-shared-c++ python
  	install -d $(DESTDIR)$(pydir)/mupdf
 -	install -m $(SO_INSTALL_MODE) $(OUT)/_mupdf.$(SO) $(DESTDIR)$(pydir)/mupdf
 +	install -m $(SO_INSTALL_MODE) $(OUT)/_mupdf.so $(DESTDIR)$(pydir)/mupdf
  	install -m 644 $(OUT)/mupdf.py $(DESTDIR)$(pydir)/mupdf/__init__.py
  
+ else
