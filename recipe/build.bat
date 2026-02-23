@@ -33,6 +33,17 @@ if errorlevel 1 exit 1
 ::   1: Build mupdfcpp64.dll using devenv
 ::   2: Generate Python wrapper using SWIG
 ::   3: Build _mupdf.pyd using cl.exe/link.exe
+
+:: Python 3.8+ no longer searches PATH when loading DLLs via ctypes.
+:: Copy libclang.dll to %PREFIX% (python.exe's directory) so that
+:: clang.cindex can find it via LoadLibrary().
+copy "%LIBRARY_BIN%\libclang.dll" "%PREFIX%\"
+if errorlevel 1 (
+    echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
+    dir "%LIBRARY_BIN%\libclang*"
+    exit 1
+)
+
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
 pip install . --no-deps --no-build-isolation
