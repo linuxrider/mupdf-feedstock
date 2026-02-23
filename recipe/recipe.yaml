@@ -84,9 +84,11 @@ tests:
         then: test -f $PREFIX/bin/mutool
       - if: win
         then: if not exist %LIBRARY_BIN%\\mutool.exe exit 1
-  - python:
-      imports:
-        - mupdf
+  - if: unix
+    then:
+      python:
+        imports:
+          - mupdf
 
 about:
   homepage: https://www.mupdf.com/
