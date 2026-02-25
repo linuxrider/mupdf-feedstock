@@ -22,8 +22,6 @@ source:
 
 build:
   number: 0
-  skip:
-    - win
   dynamic_linking:
     missing_dso_allowlist:
       - if: osx
