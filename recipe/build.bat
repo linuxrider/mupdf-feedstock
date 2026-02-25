@@ -40,13 +40,15 @@ if errorlevel 1 exit 1
 :: Python 3.8+ no longer searches PATH when loading DLLs via ctypes.
 :: Copy libclang.dll to %PREFIX% (python.exe's directory) so that
 :: clang.cindex can find it via LoadLibrary().
-copy "%LIBRARY_BIN%\libclang.dll" "%PREFIX%\"
+copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\libclang.dll"
 if errorlevel 1 (
     echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
     dir "%LIBRARY_BIN%\libclang*"
     exit 1
 )
 
+:: overrider hardcoded v142 in sln files
+set PlatformToolset=%SLN_TOOLSET%
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
 pip install . --no-deps --no-build-isolation
