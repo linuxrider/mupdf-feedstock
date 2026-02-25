@@ -30,6 +30,7 @@ for /R "%SLN_DIR%" %%f in (*.vcxproj) do (
 ::                          -> libmuthreads
 ::                          -> sodochandler
 msbuild %SLN_DIR%\%SLN_FILE% ^
+    -maxcpucount ^
     /p:Configuration=%CONFIG% ^
     /p:Platform=%SLN_PLAT% ^
     /p:PlatformToolset=%SLN_TOOLSET% ^
