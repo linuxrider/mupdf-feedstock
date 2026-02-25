@@ -46,19 +46,21 @@ if errorlevel 1 exit 1
 :: Copy libclang.dll to %PREFIX% (python.exe's directory) so that
 :: clang.cindex can find it via LoadLibrary().
 
-copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\"
-if errorlevel 1 (
-    echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
-    dir "%LIBRARY_BIN%\libclang*"
-    exit 1
-)
+@REM copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\"
+@REM if errorlevel 1 (
+@REM     echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
+@REM     dir "%LIBRARY_BIN%\libclang*"
+@REM     exit 1
+@REM )
 
-
+mklink /H "%PREFIX%\libclang.dll" "%LIBRARY_BIN%\libclang-13.dll"
 
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
 pip install . --no-deps --no-build-isolation
 if errorlevel 1 exit 1
+
+del "%PREFIX%\libclang.dll"
 
 :: --- Install mutool and headers ---
 cmake -E make_directory %LIBRARY_BIN%
