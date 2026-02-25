@@ -19,7 +19,10 @@ source:
         - wrap.patch
         # Python extensions must be .so even on macOS, not .dylib
         - python-ext-so.patch
-
+    # - if: win
+    #   then:
+    #     # cl.exe comlains about: `The input line is too long.` and `The syntax of the command is incorrect.`
+    #     - win-too-long-path.patch
 build:
   number: 0
   dynamic_linking:

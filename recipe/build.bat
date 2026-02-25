@@ -10,6 +10,13 @@ set "SLN_DIR=platform\win32"
 set "SLN_FILE=mupdf.sln"
 set "CONFIG=Release"
 
+:: Patch Toolset
+for /R "%SLN_DIR%" %%f in (*.vcxproj) do (
+    echo Patching %%f ...
+    powershell -Command "(Get-Content '%%f') -replace '<PlatformToolset>.*</PlatformToolset>', '<PlatformToolset>%SLN_TOOLSET%</PlatformToolset>' | Set-Content '%%f'"
+)
+
+
 :: Build mutool via MSBuild. Project references pull in the full dependency chain:
 ::   mutool -> libmutool -> libmupdf -> libthirdparty  (brotli, freetype, jbig2dec,
 ::                                                      libjpeg, openjpeg, zlib,
@@ -25,6 +32,7 @@ set "CONFIG=Release"
 msbuild %SLN_DIR%\%SLN_FILE% ^
     /p:Configuration=%CONFIG% ^
     /p:Platform=%SLN_PLAT% ^
+    /p:PlatformToolset=%SLN_TOOLSET% ^
     /t:mutool ^
     /verbosity:normal
 if errorlevel 1 exit 1
@@ -47,11 +55,6 @@ if errorlevel 1 (
 )
 
 
-:: Patch Toolset
-for /R "%PROJ_DIR%" %%f in (*.vcxproj) do (
-    echo Patching %%f ...
-    powershell -Command "(Get-Content '%%f') -replace '<PlatformToolset>.*</PlatformToolset>', '<PlatformToolset>%SLN_TOOLSET%</PlatformToolset>' | Set-Content '%%f'"
-)
 
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
