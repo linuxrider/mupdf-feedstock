@@ -25,7 +25,6 @@ set "CONFIG=Release"
 msbuild %SLN_DIR%\%SLN_FILE% ^
     /p:Configuration=%CONFIG% ^
     /p:Platform=%SLN_PLAT% ^
-    /p:PlatformToolset=%SLN_TOOLSET% ^
     /t:mutool ^
     /verbosity:normal
 if errorlevel 1 exit 1
@@ -47,8 +46,6 @@ if errorlevel 1 (
     exit 1
 )
 
-:: overrider hardcoded v142 in sln files
-set PlatformToolset=%SLN_TOOLSET%
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
 pip install . --no-deps --no-build-isolation
