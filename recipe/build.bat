@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Get access to devenv
-call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
+@REM call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
 set "SLN_PLAT=%CMAKE_GENERATOR_PLATFORM%"
 set "SLN_TOOLSET=%CMAKE_GENERATOR_TOOLSET%"
