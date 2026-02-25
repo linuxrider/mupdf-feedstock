@@ -1,9 +1,6 @@
 @echo on
 setlocal EnableDelayedExpansion
 
-:: Get access to devenv
-@REM call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
-
 set "SLN_PLAT=%CMAKE_GENERATOR_PLATFORM%"
 set "SLN_TOOLSET=%CMAKE_GENERATOR_TOOLSET%"
 set "SLN_DIR=platform\win32"
@@ -48,7 +45,8 @@ if errorlevel 1 exit 1
 :: Python 3.8+ no longer searches PATH when loading DLLs via ctypes.
 :: Copy libclang.dll to %PREFIX% (python.exe's directory) so that
 :: clang.cindex can find it via LoadLibrary().
-copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\libclang.dll"
+
+copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\"
 if errorlevel 1 (
     echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
     dir "%LIBRARY_BIN%\libclang*"
