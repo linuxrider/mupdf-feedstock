@@ -46,6 +46,13 @@ if errorlevel 1 (
     exit 1
 )
 
+
+:: Patch Toolset
+for /R "%PROJ_DIR%" %%f in (*.vcxproj) do (
+    echo Patching %%f ...
+    powershell -Command "(Get-Content '%%f') -replace '<PlatformToolset>.*</PlatformToolset>', '<PlatformToolset>%SLN_TOOLSET%</PlatformToolset>' | Set-Content '%%f'"
+)
+
 set MUPDF_SETUP_USE_CLANG_PYTHON=1
 set MUPDF_SETUP_USE_SWIG=1
 pip install . --no-deps --no-build-isolation
