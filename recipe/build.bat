@@ -31,7 +31,7 @@ msbuild %SLN_DIR%\%SLN_FILE% ^
     /p:Configuration=%CONFIG% ^
     /p:Platform=%SLN_PLAT% ^
     /p:PlatformToolset=%SLN_TOOLSET% ^
-    /t:mutool ^
+    /t:libmupdf ^
     /verbosity:normal
 if errorlevel 1 exit 1
 
@@ -43,22 +43,15 @@ if errorlevel 1 exit 1
 ::   3: Build _mupdf.pyd using cl.exe/link.exe
 
 :: Python 3.8+ no longer searches PATH when loading DLLs via ctypes.
-:: Copy libclang.dll to %PREFIX% (python.exe's directory) so that
+:: Link libclang.dll to %PREFIX% (python.exe's directory) so that
 :: clang.cindex can find it via LoadLibrary().
 
-@REM copy "%LIBRARY_BIN%\libclang-13.dll" "%PREFIX%\"
-@REM if errorlevel 1 (
-@REM     echo "WARNING: Could not copy libclang.dll from %LIBRARY_BIN% to %PREFIX%"
-@REM     dir "%LIBRARY_BIN%\libclang*"
-@REM     exit 1
-@REM )
+mklink /H "%PREFIX%\libclang.dll" "%LIBRARY_BIN%\libclang-*.dll"
 
-mklink /H "%PREFIX%\libclang.dll" "%LIBRARY_BIN%\libclang-13.dll"
-
-set MUPDF_SETUP_USE_CLANG_PYTHON=1
-set MUPDF_SETUP_USE_SWIG=1
-pip install . --no-deps --no-build-isolation
-if errorlevel 1 exit 1
+@REM set MUPDF_SETUP_USE_CLANG_PYTHON=1
+@REM set MUPDF_SETUP_USE_SWIG=1
+@REM pip install . --no-deps --no-build-isolation
+@REM if errorlevel 1 exit 1
 
 del "%PREFIX%\libclang.dll"
 
