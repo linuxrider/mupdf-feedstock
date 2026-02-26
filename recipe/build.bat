@@ -26,12 +26,16 @@ for /R "%SLN_DIR%" %%f in (*.vcxproj) do (
 ::                                   -> libtesseract -> libleptonica
 ::                          -> libmuthreads
 ::                          -> sodochandler
+
+msbuild mupdf.sln -ts
+
 msbuild %SLN_DIR%\%SLN_FILE% ^
     -maxcpucount ^
     /p:Configuration=%CONFIG% ^
     /p:Platform=%SLN_PLAT% ^
     /p:PlatformToolset=%SLN_TOOLSET% ^
     /t:libmupdf ^
+    /t:mutool ^
     /verbosity:normal
 if errorlevel 1 exit 1
 
